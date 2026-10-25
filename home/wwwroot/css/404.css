@@ -1,0 +1,284 @@
+/* ========== 双语显示 ========== */
+:root[lang="en"] [lang="zh-CN"],
+:root[lang="zh-CN"] [lang="en"] { display: none !important; }
+
+:root {
+  --bg: #070912;
+  --text: #eef0ff;
+  --muted: #9aa0c3;
+  --violet: #8b5cf6;
+  --cyan: #22d3ee;
+  --pink: #f472b6;
+  --glass: rgba(255, 255, 255, .06);
+  --glass-border: rgba(255, 255, 255, .12);
+  --font: "Space Grotesk", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+canvas { display: block; }
+#stars, #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#stars { z-index: 0; }
+#confetti { z-index: 50; }
+
+/* ========== 极光光晕 ========== */
+.aurora { position: fixed; inset: 0; z-index: 0; overflow: hidden; filter: blur(70px); opacity: .55; }
+.aurora span {
+  position: absolute;
+  width: 46vmax;
+  height: 46vmax;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  animation: drift 18s ease-in-out infinite alternate;
+}
+.aurora span:nth-child(1) { background: var(--violet); top: -18vmax; left: -10vmax; }
+.aurora span:nth-child(2) { background: var(--cyan); bottom: -22vmax; right: -12vmax; animation-duration: 22s; animation-delay: -6s; }
+.aurora span:nth-child(3) { background: var(--pink); top: 30%; left: 45%; width: 30vmax; height: 30vmax; opacity: .6; animation-duration: 26s; animation-delay: -12s; }
+@keyframes drift {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(8vmax, 6vmax) scale(1.15); }
+  100% { transform: translate(-6vmax, 10vmax) scale(.9); }
+}
+
+/* ========== 顶部 ========== */
+.top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+}
+@media (min-width: 768px) { .top { padding: 24px 32px; } }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  backdrop-filter: blur(8px);
+}
+.badge .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f87171;
+  box-shadow: 0 0 0 0 rgba(248, 113, 113, .7);
+  animation: pulse 1.8s infinite;
+}
+@keyframes pulse {
+  70% { box-shadow: 0 0 0 10px rgba(248, 113, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+}
+
+.lang-btn {
+  height: 34px;
+  min-width: 52px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--text);
+  font: 700 14px var(--font);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: border-color .2s, background-color .2s;
+}
+.lang-btn:hover { border-color: var(--cyan); background: rgba(34, 211, 238, .12); }
+
+/* ========== 主体 ========== */
+.stage {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 72px 16px 32px;
+  text-align: center;
+}
+#particles {
+  width: min(100%, 900px);
+  height: min(38vh, 340px);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.copy { max-width: 560px; animation: rise .9s cubic-bezier(.2, .8, .2, 1) both .2s; }
+@keyframes rise { from { opacity: 0; transform: translateY(24px); } }
+
+/* 故障风标题 */
+.glitch {
+  position: relative;
+  margin: 8px 0 12px;
+  font-size: clamp(30px, 6vw, 48px);
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text-en);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+:root[lang="zh-CN"] .glitch::before,
+:root[lang="zh-CN"] .glitch::after { content: attr(data-text-zh); }
+.glitch::before { color: var(--cyan); animation: glitch-a 3.2s infinite steps(1); clip-path: inset(0 0 60% 0); }
+.glitch::after { color: var(--pink); animation: glitch-b 2.7s infinite steps(1); clip-path: inset(55% 0 0 0); }
+@keyframes glitch-a {
+  0%, 86%, 100% { transform: none; opacity: 0; }
+  87% { transform: translate(-4px, -1px); opacity: .9; }
+  90% { transform: translate(3px, 1px); opacity: .9; }
+  93% { transform: translate(-2px, 0); opacity: .9; }
+}
+@keyframes glitch-b {
+  0%, 80%, 100% { transform: none; opacity: 0; }
+  81% { transform: translate(4px, 1px); opacity: .9; }
+  84% { transform: translate(-3px, -1px); opacity: .9; }
+  87% { transform: translate(2px, 0); opacity: .9; }
+}
+
+.sub { margin: 0 auto 18px; color: var(--muted); font-size: 17px; line-height: 1.6; }
+.hint { margin: 0 0 26px; font-size: 13px; color: var(--muted); opacity: .8; }
+.key {
+  display: inline-block;
+  padding: 1px 8px;
+  margin: 0 2px;
+  border-radius: 6px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font: 700 15px var(--font);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), box-shadow .2s, border-color .2s;
+}
+.btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.btn:hover { transform: translateY(-3px); }
+.btn:active { transform: translateY(0) scale(.97); }
+.btn:focus-visible, .lang-btn:focus-visible, .lost-page:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+.btn-primary {
+  border: 0;
+  background: linear-gradient(120deg, var(--violet), var(--cyan));
+  box-shadow: 0 8px 30px rgba(139, 92, 246, .35);
+}
+.btn-primary:hover { box-shadow: 0 12px 40px rgba(34, 211, 238, .45); }
+.btn-ghost { border: 1px solid var(--glass-border); background: var(--glass); backdrop-filter: blur(8px); }
+.btn-ghost:hover { border-color: var(--pink); }
+.btn-ghost[aria-pressed="true"] { border-color: var(--pink); background: rgba(244, 114, 182, .14); }
+
+/* ========== 小游戏：丢失的页面 ========== */
+.lost-page {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 30;
+  width: 56px;
+  height: 70px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transition: transform .55s cubic-bezier(.34, 1.4, .64, 1);
+  filter: drop-shadow(0 8px 18px rgba(34, 211, 238, .35));
+}
+.lost-page svg { width: 100%; height: 100%; animation: wobble 2.4s ease-in-out infinite; overflow: visible; }
+.lost-page .paper { fill: #f8fafc; }
+.lost-page .fold { fill: #cbd5e1; }
+.lost-page .eye { fill: #1e293b; }
+.lost-page .mouth { fill: none; stroke: #1e293b; stroke-width: 2.4; stroke-linecap: round; }
+.lost-page.caught svg { animation: caught .45s ease; }
+@keyframes wobble {
+  0%, 100% { transform: rotate(-8deg) translateY(0); }
+  50% { transform: rotate(8deg) translateY(-6px); }
+}
+@keyframes caught {
+  40% { transform: scale(1.35) rotate(20deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+.scoreboard {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 30;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(8px);
+  font-size: 14px;
+  color: var(--muted);
+}
+.scoreboard strong { color: var(--text); font-size: 18px; }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  top: 72px;
+  z-index: 60;
+  max-width: calc(100% - 32px);
+  transform: translate(-50%, -12px);
+  padding: 12px 20px;
+  border-radius: 14px;
+  background: rgba(15, 18, 35, .85);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+  font-size: 15px;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s, transform .25s;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 矮屏幕（横屏手机）时压缩布局 */
+@media (max-height: 560px) {
+  #particles { height: 28vh; }
+  .sub { font-size: 15px; margin-bottom: 10px; }
+  .hint { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora span, .badge .dot, .glitch::before, .glitch::after, .lost-page svg { animation: none; }
+  .copy { animation: none; }
+}
