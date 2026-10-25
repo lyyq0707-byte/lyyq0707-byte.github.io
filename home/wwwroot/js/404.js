@@ -53,6 +53,14 @@
     return r;
   }
 
+  // 按画布的真实像素尺寸整块清空。手机地址栏收起/展开时，画布可能比 innerWidth/innerHeight 大，
+  // 只清 innerWidth × innerHeight 会在底部和右侧边缘留下没被擦掉的残影。
+  function clearCanvas(ctx) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
   function buildStars() {
     const count = Math.round(Math.min(260, (innerWidth * innerHeight) / 5200));
     stars = Array.from({ length: count }, () => ({
@@ -64,13 +72,13 @@
   }
 
   function drawStars(time) {
-    sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    sctx.clearRect(0, 0, innerWidth, innerHeight);
+    clearCanvas(sctx);
+    const sw = starCanvas.width / dpr, sh = starCanvas.height / dpr;
     for (const s of stars) {
       const px = s.x - parallax.x * 40 * s.z;
       const py = s.y - parallax.y * 40 * s.z;
-      const x = ((px % innerWidth) + innerWidth) % innerWidth;
-      const y = ((py % innerHeight) + innerHeight) % innerHeight;
+      const x = ((px % sw) + sw) % sw;
+      const y = ((py % sh) + sh) % sh;
       const twinkle = reduceMotion ? 1 : 0.6 + Math.sin(time / 700 + s.tw) * 0.4;
       sctx.globalAlpha = (0.25 + s.z * 0.75) * twinkle;
       sctx.fillStyle = '#ffffff';
@@ -148,8 +156,7 @@
   });
 
   function drawParticles() {
-    pctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    pctx.clearRect(0, 0, pRect.width, pRect.height);
+    clearCanvas(pctx);
     const mx = pointer.x - pRect.left;
     const my = pointer.y - pRect.top;
     const radius = pointer.coarse ? 70 : 90;
@@ -201,10 +208,15 @@
     }
   }
 
+  let confettiWasDrawn = false;
   function drawConfetti() {
-    cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    cctx.clearRect(0, 0, innerWidth, innerHeight);
-    if (!confetti.length) return;
+    if (!confetti.length) {
+      if (confettiWasDrawn) { clearCanvas(cctx); confettiWasDrawn = false; }
+      return;
+    }
+    clearCanvas(cctx);
+    confettiWasDrawn = true;
+    const floor = cCanvas.height / dpr;
     for (const c of confetti) {
       c.vy += 0.22;
       c.vx *= 0.99;
@@ -220,7 +232,7 @@
       cctx.fillRect(-c.w / 2, -c.h / 2, c.w, c.h);
       cctx.restore();
     }
-    confetti = confetti.filter((c) => c.life > 0 && c.y < innerHeight + 40);
+    confetti = confetti.filter((c) => c.life > 0 && c.y < floor + 40);
   }
 
   // ========== 小游戏：找回丢失的页面 ==========
@@ -314,15 +326,6 @@
     }
   }, { passive: true });
 
-  // ========== 返回按钮（不提供任何其他页面的链接） ==========
-  document.getElementById('backBtn').addEventListener('click', () => {
-    if (history.length > 1 && document.referrer) history.back();
-    else {
-      explode(pRect.width / 2, pRect.height / 2, 18);
-      showToast(t('There’s nowhere to go back to… 🛸', '没有上一页可以回去了…… 🛸'));
-    }
-  });
-
   // ========== 尺寸与动画循环 ==========
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -332,10 +335,13 @@
     buildParticles();
   }
   let resizeTimer;
-  addEventListener('resize', () => {
+  const scheduleResize = () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(resize, 120);
-  });
+  };
+  addEventListener('resize', scheduleResize);
+  // 手机浏览器地址栏收起/展开只改变 visualViewport，不一定触发 window resize
+  if (window.visualViewport) visualViewport.addEventListener('resize', scheduleResize);
 
   function frame(time) {
     parallax.x += (parallax.tx - parallax.x) * 0.06;

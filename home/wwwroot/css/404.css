@@ -198,9 +198,7 @@ canvas { display: block; }
   box-shadow: 0 8px 30px rgba(139, 92, 246, .35);
 }
 .btn-primary:hover { box-shadow: 0 12px 40px rgba(34, 211, 238, .45); }
-.btn-ghost { border: 1px solid var(--glass-border); background: var(--glass); backdrop-filter: blur(8px); }
-.btn-ghost:hover { border-color: var(--pink); }
-.btn-ghost[aria-pressed="true"] { border-color: var(--pink); background: rgba(244, 114, 182, .14); }
+.btn-primary[aria-pressed="true"] { background: linear-gradient(120deg, var(--pink), var(--violet)); }
 
 /* ========== 小游戏：丢失的页面 ========== */
 .lost-page {
