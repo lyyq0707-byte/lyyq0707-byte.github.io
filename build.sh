@@ -11,9 +11,3 @@ mkdir -p _site
 cp -R home/wwwroot/. _site/
 cp _site/404.html _site/index.html
 
-
-find _site -name .gitkeep -delete
-touch _site/.nojekyll
-
-echo "Built _site:"
-find _site -type f | sort
